@@ -1,4 +1,6 @@
-from distutils.core import setup
+from numpy.distutils.core import setup, Extension
 from Cython.Build import cythonize
 
-setup(ext_modules = cythonize("dishes/interferometry/libinterferometry.pyx"))
+libinterferometry = cythonize("dishes/interferometry/libinterferometry.pyx")[0]
+
+setup(ext_modules=[libinterferometry])
