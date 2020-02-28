@@ -12,7 +12,7 @@ libimaging = cythonize([Extension('dishes.imaging.libimaging',\
         ["dishes/imaging/libimaging.pyx"], libraries=[], \
         extra_compile_args=[])])[0]
 
-setup(name="dishes", version="1.0.0", \
+setup(name="dishes", version="0.0.1", \
         packages=[\
         "dishes",\
         "dishes.constants", \
