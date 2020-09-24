@@ -1,5 +1,9 @@
+from setuptools import setup
 from numpy.distutils.core import setup, Extension
 from Cython.Build import cythonize
+
+from distutils.command.sdist import sdist
+cmdclass={'sdist': sdist}
 
 # Set up the extension modules.
 
@@ -12,7 +16,16 @@ libimaging = cythonize([Extension('dishes.imaging.libimaging',\
         ["dishes/imaging/libimaging.pyx"], libraries=[], \
         extra_compile_args=[])])[0]
 
-setup(name="dishes", version="0.0.1", \
+# Now define the setup for the package.
+
+setup(name="dishes", \
+        version="0.0.1", \
+        author="Patrick Sheehan", \
+        author_email="psheehan@nrao.edu", \
+        description="Tools for working with radio interferometry visibilities and images", \
+        long_description=open("README.md","r").read(), \
+        long_description_content_type="text/markdown", \
+        url="https://github.com/psheehan/dishes", \
         packages=[\
         "dishes",\
         "dishes.constants", \
@@ -20,4 +33,10 @@ setup(name="dishes", version="0.0.1", \
         "dishes.interferometry", \
         "dishes.spectroscopy",\
         "dishes.table"], \
-        ext_modules=[libinterferometry, libimaging])
+        package_data={\
+        'dishes.imaging': ['*.pyx'], \
+        'dishes.interferometry': ['*.pyx'], \
+        ext_modules=[libinterferometry, libimaging], \
+        install_requires=['numpy','scipy','matplotlib','emcee','corner',\
+        'h5py','mpi4py','Cython','astropy','schwimmbad','dynesty'], \
+        cmdclass=cmdclass)
