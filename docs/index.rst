@@ -6,9 +6,15 @@
 Welcome to dishes's documentation!
 =================================
 
+This code can be used to work with interferometric visibilities and images from ALMA and the VLA, and provides a number of utilities such as wrappers for common tools used to Fourier transform model images onto visibility datasets, built in imaging and deconvolution routines, etc. This documentation will be updated soon.
+
+If you have any questions about using the code (or this documentation), requests for features, or suggestions for improvement, please don't hesitate to send me an e-mail.
+
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
+
+   installation.rst
 
 
 
@@ -19,45 +25,12 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
-
-$project
-========
-
-$project will solve your problem of where to start with documentation,
-by providing a basic explanation of how to do it easily.
-
-Look how easy it is to use:
-
-    import project
-    # Get your stuff done
-    project.do_stuff()
-
-Features
---------
-
-- Be awesome
-- Make things faster
-
-Installation
-------------
-
-Install $project by running:
-
-    install project
-
-Contribute
-----------
-
-- Issue Tracker: github.com/$project/$project/issues
-- Source Code: github.com/$project/$project
-
 Support
 -------
 
-If you are having issues, please let us know.
-We have a mailing list located at: project@google-groups.com
+If you are having issues, please let me know at psheehan at northwestern dot edu.
 
 License
 -------
 
-The project is licensed under the BSD license.
+The project is licensed under the GPL-3.0 license.
