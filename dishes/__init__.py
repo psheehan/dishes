@@ -1,3 +1,7 @@
+import warnings
+
+text = warnings.warn("dishes v2.0.0 represents a major update to the dishes code, and is not backwards compatible with the results of versions < 2.0.0. *Do not use v2.0.0 to work with results from earlier versions.* For more information, see dishes.readthedocs.io.", stacklevel=2)
+
 from . import constants
 from . import dust
 from . import gas
