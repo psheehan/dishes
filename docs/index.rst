@@ -17,6 +17,14 @@ If you have any questions about using the code (or this documentation), requests
    installation.rst
 
 
+Changelog
+=========
+
+0.0.1 (TBD)
+------------------
+
+Initial commit.
+
 
 Indices and tables
 ==================
@@ -28,7 +36,7 @@ Indices and tables
 Support
 -------
 
-If you are having issues, please let me know at psheehan at northwestern dot edu.
+If you are having issues, please let me know at psheehan at nrao dot edu.
 
 License
 -------
