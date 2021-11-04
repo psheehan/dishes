@@ -23,7 +23,7 @@ Installing the code with pip
 2. Install GALARIO. Unfortunately, GALARIO is not pip-installable by default, so you will need to follow the instructions `here <https://mtazzari.github.io/galario/>`_. Alternatively, a pip-installable version of GALARIO is in the works and can be installed like so:
    ::
 
-       pip install git+https://github.com/psheehan/galario.git
+       pip install git+https://github.com/psheehan/galario.git@add_unstructured
 
 but note that this is a fork of GALARIO and is not yet completely merged.
 
@@ -73,15 +73,3 @@ If you would like the most cutting-edge version of dishes, with updates that go 
 
    depending on what method you prefer best.
 
-Other dependencies
-""""""""""""""""""
-
-The other codes that are needed to run dishes are `Hyperion <http://www.hyperion-rt.org>`_ and `RADMC-3D <http://www.ita.uni-heidelberg.de/~dullemond/software/radmc-3d/>`_. If you are a `Homebrew <https://brew.sh>`_ user, you can do this with:
-
-    ::
-
-       brew tap psheehan/science
-       brew install hyperion
-       brew install radmc3d
-
->>>>>>> a1c85a0 (Updated installation instructions in docs.)
