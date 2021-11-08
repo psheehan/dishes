@@ -22,7 +22,7 @@ copyright = '2020, Patrick Sheehan'
 author = 'Patrick Sheehan'
 
 # The full version, including alpha/beta/rc tags
-release = '2.0.0'
+release = '0.0.1'
 
 
 # -- General configuration ---------------------------------------------------
