@@ -18,7 +18,7 @@ If you have any questions about using the code (or this documentation), requests
 
 .. toctree::
    :maxdepth: 1
-   :caption: Package Reference:
+   :caption: Package Reference
 
 Changelog
 =========
