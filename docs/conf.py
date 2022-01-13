@@ -12,9 +12,15 @@
 
 import os
 import sys
-sys.path.insert(0, os.path.abspath("."))
 sys.path.insert(0, os.path.abspath("../"))
 
+
+# -- Mock imports ------------------------------------------------------------
+
+autodoc_mock_imports = ["numpy","hyperion","scipy","scikit-learn","h5py",
+        "matplotlib","emcee","corner","mpi4py","astropy","schwimmbad","dynesty",
+        "dishes.interferometry.libinterferometry","dishes.imaging.libimaging",
+        "galario","mpl_toolkits","sklearn","casatools"]
 
 # -- Project information -----------------------------------------------------
 
@@ -33,7 +39,7 @@ release = '0.0.1'
 # ones.
 extensions = [
         'recommonmark',
-        'sphinx.ext.autodoc'
+        'sphinx.ext.autodoc',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

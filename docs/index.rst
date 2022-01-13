@@ -20,6 +20,8 @@ If you have any questions about using the code (or this documentation), requests
    :maxdepth: 1
    :caption: Package Reference:
 
+   interferometry
+
 Changelog
 =========
 
