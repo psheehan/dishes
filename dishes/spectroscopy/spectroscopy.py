@@ -1,7 +1,8 @@
 import numpy
 import astropy
 import h5py
-from ..constants.physics import c
+from scipy.constants import c
+c *= 100
 
 class Spectrum:
 

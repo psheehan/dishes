@@ -1,4 +1,4 @@
-from ..constants.astronomy import arcsec
+from scipy.constants import arcsec
 from ..table import Table
 import numpy
 import scipy.ndimage.filters

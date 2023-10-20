@@ -1,6 +1,6 @@
 import numpy
 from ..interferometry import Visibilities
-from ..constants.astronomy import pc, arcsec
+from scipy.constants import arcsec
 from scipy.fftpack import fft2, fftshift, fftfreq, ifftshift
 
 def imtovis(image):

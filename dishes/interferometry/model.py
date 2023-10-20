@@ -1,7 +1,7 @@
 import numpy
 import scipy.special
-from ..constants.astronomy import arcsec
-from ..constants.physics import c
+from scipy.constants import arcsec, c
+c *= 100
 from .libinterferometry import Visibilities
 
 def model(u, v, params, return_type="complex", funct="gauss", freq=230., \

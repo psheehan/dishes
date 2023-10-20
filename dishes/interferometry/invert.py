@@ -2,7 +2,7 @@ import numpy
 from . import center
 from .libinterferometry import grid
 from ..imaging import Image
-from ..constants.astronomy import arcsec
+from scipy.constants import arcsec
 from scipy.fftpack import ifft2, fftshift, ifftshift, fftfreq
 
 def invert(data, imsize=256, pixel_size=0.25, convolution="pillbox", mfs=False,\

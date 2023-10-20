@@ -1,5 +1,5 @@
-from ..constants.astronomy import arcsec
-from ..constants.physics import c
+from scipy.constants import arcsec, c
+c *= 100
 from .libimaging import Image
 from astropy.utils.exceptions import AstropyWarning
 import astropy.io.fits as fits

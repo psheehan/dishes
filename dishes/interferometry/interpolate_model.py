@@ -1,6 +1,6 @@
 import numpy
 import scipy.interpolate
-from ..constants.astronomy import arcsec
+from scipy.constants import arcsec
 from .libinterferometry import Visibilities
 from galario import double
 try:

@@ -1,5 +1,6 @@
-from ..constants.astronomy import arcsec
-from ..constants.physics import c
+from scipy.constants import arcsec, c
+c *= 100
+
 from . import Image
 try:
     import pvextractor

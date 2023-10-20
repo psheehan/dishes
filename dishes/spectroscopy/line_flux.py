@@ -1,6 +1,5 @@
-from ..constants.physics import c
-from ..constants.math import pi
-from ..constants.astronomy import Jy
+from scipy.constants import c
+c *= 100
 from numpy import arange,ones,concatenate,sqrt,exp,where,array,mat,sin,log
 from numpy import abs as absv
 from scipy.optimize import leastsq

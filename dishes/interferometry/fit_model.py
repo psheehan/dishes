@@ -1,5 +1,5 @@
 #import matplotlib.pyplot as plt
-from ..constants.astronomy import arcsec
+from scipy.constants import arcsec
 import numpy
 import scipy
 import dynesty

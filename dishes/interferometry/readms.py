@@ -1,4 +1,5 @@
-from ..constants.physics import c
+from scipy.constants import c
+c *= 100
 from .libinterferometry import Visibilities
 import astropy.table
 import casatools
