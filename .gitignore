@@ -1,0 +1,14 @@
+*.so
+*.pyc
+__pycache__
+*.swp
+*.pdf
+*.dSYM
+test
+*.c
+*.cover
+_build
+_static
+_templates
+build
+dishes.egg-info
