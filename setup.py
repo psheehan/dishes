@@ -30,8 +30,7 @@ setup(name="dishes", \
         "dishes",\
         "dishes.imaging",\
         "dishes.interferometry", \
-        "dishes.spectroscopy",\
-        "dishes.table"], \
+        "dishes.spectroscopy"], \
         package_data={\
         'dishes.imaging': ['*.pyx'], \
         'dishes.interferometry': ['*.pyx']}, \

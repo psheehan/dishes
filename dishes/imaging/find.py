@@ -1,14 +1,15 @@
 from scipy.constants import arcsec
-from ..table import Table
-import numpy
+import matplotlib.pyplot as plt
 import scipy.ndimage.filters
 import scipy.ndimage.morphology
 import scipy.optimize
 import scipy.signal
-import matplotlib.pyplot as plt
-import os
-import astropy
 import astropy.coordinates
+import astropy.table
+import numpy
+import h5py
+import os
+
 
 def find(image, threshold=5, include_radius=20, window_size=40, \
         source_list=None, list_search_radius=1.0, list_threshold=5, \
@@ -475,3 +476,54 @@ def bresenham_line(x,y,x2,y2):
         d = d + (2 * dy)
     coords.append((x2,y2))
     return coords
+
+class MaskedColumn(astropy.table.MaskedColumn):
+
+    def __getitem__(self, item):
+        x = super(MaskedColumn, self).__getitem__(item)
+
+        try:
+            if x.mask:
+                return '--'
+        except:
+            return x
+
+class Table(astropy.table.Table):
+
+    def __init__(self, *args, **kwargs):
+        super(Table, self).__init__(*args, **kwargs)
+
+        self.MaskedColumn = MaskedColumn
+        if self._masked:
+            self._column_class = MaskedColumn
+
+    @staticmethod
+    def read_hdf5(*args, **kwargs):
+        try:
+            self = Table(astropy.table.Table.read(*args, path="table", \
+                    **kwargs), masked=True)
+            self.mask = astropy.table.Table.read(*args, path="mask", **kwargs)
+        except OSError:
+            self = Table(astropy.table.Table.read(*args, path="table",**kwargs))
+
+        for col in self.colnames:
+            if 'S' in self[col].dtype.str:
+                self.replace_column(col, self[col].astype(str))
+
+        return self
+
+    def write_hdf5(self, *args, **kwargs):
+        for col in self.colnames:
+            if 'U' in self[col].dtype.str:
+                self.replace_column(col, self[col].astype(bytes))
+
+        self.write(*args, path='table', overwrite=True, **kwargs)
+
+        for col in self.colnames:
+            if 'S' in self[col].dtype.str:
+                self.replace_column(col, self[col].astype(str))
+
+        if self.masked:
+            self.mask.write(*args, path='mask', append=True, **kwargs)
+
+        return
