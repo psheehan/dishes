@@ -28,14 +28,13 @@ setup(name="dishes", \
         url="https://github.com/psheehan/dishes", \
         packages=[\
         "dishes",\
-        "dishes.constants", \
         "dishes.imaging",\
         "dishes.interferometry", \
         "dishes.spectroscopy",\
         "dishes.table"], \
         package_data={\
         'dishes.imaging': ['*.pyx'], \
-        'dishes.interferometry': ['*.pyx'], \
+        'dishes.interferometry': ['*.pyx']}, \
         ext_modules=[libinterferometry, libimaging], \
-        install_requires=['numpy','scipy','matplotlib','emcee','corner',\
-        'h5py','mpi4py','Cython','astropy','schwimmbad','dynesty'])
+        install_requires=['numpy','scipy','matplotlib',\
+        'h5py','Cython','astropy','dynesty'])

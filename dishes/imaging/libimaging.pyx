@@ -2,7 +2,8 @@ import numpy
 cimport numpy
 import astropy
 import h5py
-from ..constants.physics import c
+from scipy.constants import c
+c *= 100
 
 cdef class ImageObject:
     cdef public numpy.ndarray image, x, y, unc, velocity, freq, wave
