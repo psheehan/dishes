@@ -16,4 +16,4 @@ setup(name="dishes", \
         packages=["dishes","dishes.imaging","dishes.interferometry",\
         "dishes.spectroscopy"], \
         install_requires=['numpy','scipy','matplotlib',\
-        'h5py','Cython','astropy','dynesty','numba'])
+        'h5py','astropy','dynesty','numba'])
