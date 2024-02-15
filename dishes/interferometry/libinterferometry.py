@@ -1,25 +1,12 @@
 import numpy
-cimport numpy
 import h5py
 import astropy
-cimport cython
 import time
-from libc.math cimport pi
+import numba
 
-@cython.auto_pickle(True)
-cdef class VisibilitiesObject:
-    cdef public numpy.ndarray u, v, freq, real, imag, weights, \
-            uvdist, amp, phase
-    cdef public numpy.ndarray baseline
-    cdef public str array_name
-
-    def __init__(self, numpy.ndarray[double, ndim=1] u=None, \
-            numpy.ndarray[double, ndim=1] v=None, \
-            numpy.ndarray[double, ndim=1] freq=None, \
-            numpy.ndarray[double, ndim=2] real=None, \
-            numpy.ndarray[double, ndim=2] imag=None, \
-            numpy.ndarray[double, ndim=2] weights=None, \
-            baseline=None, array_name="CARMA"):
+class Visibilities:
+    def __init__(self, u=None, v=None, freq=None, real=None, imag=None, \
+            weights=None, baseline=None, array_name="CARMA"):
 
         if (type(u) != type(None)) and (type(v) != type(None)):
             self.u = u
@@ -44,14 +31,12 @@ cdef class VisibilitiesObject:
         self.array_name = array_name
 
     def __reduce__(self):
-        return (rebuild, (self.u, self.v, self.freq, self.real, self.imag, \
+        return (self.rebuild, (self.u, self.v, self.freq, self.real, self.imag,\
                 self.weights, self.baseline, self.array_name))
 
-def rebuild(u, v, freq, real, imag, weights, baseline, array_name):
-    return VisibilitiesObject(u, v, freq, real, imag, weights, baseline, \
-            array_name)
-
-class Visibilities(VisibilitiesObject):
+    def rebuild(u, v, freq, real, imag, weights, baseline, array_name):
+        return Visibilities(u, v, freq, real, imag, weights, baseline, \
+                array_name)
 
     def get_baselines(self, num):
         incl = self.baseline == num
@@ -78,15 +63,6 @@ class Visibilities(VisibilitiesObject):
         hdulist.append(hdu)
 
         return hdulist
-
-    """
-    def __reduce__(self):
-        return (self.rebuild, (self.u, self.v, self.freq, self.real, self.imag,\
-                self.weights))
-
-    def rebuild(u, v, freq, real, imag, weights):
-        return Visibilities(u, v, freq, real, imag, weights)
-    """
 
     def read(self, filename=None, usefile=None):
         if (usefile == None):
@@ -148,16 +124,9 @@ class Visibilities(VisibilitiesObject):
         if (usefile == None):
             f.close()
 
-@cython.boundscheck(False)
 def average(data, gridsize=256, binsize=None, radial=False, log=False, \
         logmin=None, logmax=None, mfs=False, mode="continuum"):
 
-    cdef numpy.ndarray[double, ndim=1] u, v, freq, uvdist
-    cdef numpy.ndarray[double, ndim=2] real, imag, weights
-    cdef numpy.ndarray[double, ndim=3] new_real, new_imag, new_weights
-    cdef numpy.ndarray[unsigned int, ndim=1] i, j
-    cdef unsigned int k, n
-    
     if mfs:
         vis = freqcorrect(data)
         u = vis.u
@@ -191,10 +160,9 @@ def average(data, gridsize=256, binsize=None, radial=False, log=False, \
 
     # Set some parameter numbers for future use.
 
-    cdef int nuv = u.size
-    cdef int nfreq = freq.size
+    nuv = u.size
+    nfreq = freq.size
     
-    cdef int nchannels
     if mode == "continuum":
         nchannels = 1
     elif mode == "spectralline":
@@ -264,24 +232,16 @@ def average(data, gridsize=256, binsize=None, radial=False, log=False, \
     i = i[good]
     j = j[good]
 
+    if mode == "continuum":
+        l = numpy.repeat(0, nfreq)
+    else:
+        l = numpy.arange(nfreq)
+
     nuv = u.size
 
-    for k in range(nuv):
-        for n in range(nfreq):
-            if mode == "continuum":
-                if not radial:
-                    new_u[j[k],i[k],0] += u[k]*weights[k,n]
-                    new_v[j[k],i[k],0] += v[k]*weights[k,n]
-                new_real[j[k],i[k],0] += real[k,n]*weights[k,n]
-                new_imag[j[k],i[k],0] += imag[k,n]*weights[k,n]
-                new_weights[j[k],i[k],0] += weights[k,n]
-            elif mode == "spectralline":
-                if not radial:
-                    new_u[j[k],i[k],n] += u[k]*weights[k,n]
-                    new_v[j[k],i[k],n] += v[k]*weights[k,n]
-                new_real[j[k],i[k],n] += real[k,n]*weights[k,n]
-                new_imag[j[k],i[k],n] += imag[k,n]*weights[k,n]
-                new_weights[j[k],i[k],n] += weights[k,n]
+    new_u, new_v, new_real, new_imag, new_weights = grid_engine(u, v, real, \
+            imag, weights, i, j, l, new_u, new_v, new_real, new_imag, \
+            new_weights, nuv, nfreq)
 
     good_data = new_weights != 0.0
     new_real[good_data] = new_real[good_data] / new_weights[good_data]
@@ -310,20 +270,25 @@ def average(data, gridsize=256, binsize=None, radial=False, log=False, \
             new_imag[good_data].reshape((new_u.size,nchannels)), \
             new_weights[good_data].reshape((new_u.size,nchannels)))
 
-@cython.boundscheck(False)
+@numba.jit(fastmath=True, nopython=True)
+def grid_engine(u, v, real, imag, weights, i, j, l, new_u, new_v, new_real, \
+        new_imag, new_weights, nuv, nfreq):
+
+    for k in range(nuv):
+        for n in range(nfreq):
+            new_u[j[k],i[k],l[n]] += u[k]*weights[k,n]
+            new_v[j[k],i[k],l[n]] += v[k]*weights[k,n]
+            new_real[j[k],i[k],l[n]] += real[k,n]*weights[k,n]
+            new_imag[j[k],i[k],l[n]] += imag[k,n]*weights[k,n]
+            new_weights[j[k],i[k],l[n]] += weights[k,n]
+
+    return new_u, new_v, new_real, new_imag, new_weights
+
+
 def grid(data, gridsize=256, binsize=2000.0, convolution="pillbox", \
         mfs=False, channel=None, imaging=False, weighting="natural", \
         robust=2, npixels=0, mode="continuum"):
     
-    cdef numpy.ndarray[double, ndim=1] u, v, freq
-    cdef numpy.ndarray[double, ndim=2] real, imag, weights, new_u, new_v
-    cdef numpy.ndarray[double, ndim=3] new_real, new_imag, new_weights
-    cdef numpy.ndarray[double, ndim=3] binned_weights
-    cdef numpy.ndarray[unsigned int, ndim=2] i, j
-    cdef unsigned int k, l, m, n, ninclude_min, ninclude_max, lmin, lmax, \
-            mmin, mmax, ll, mm, ninclude, npix
-    cdef double mean_freq, inv_freq
-
     if mfs:
         vis = freqcorrect(data)
         u = vis.u
@@ -331,7 +296,7 @@ def grid(data, gridsize=256, binsize=2000.0, convolution="pillbox", \
         freq = vis.freq
         real = vis.real
         imag = vis.imag
-        weights = vis.weights
+        weights = vis.weights.copy()
     else:
         u = data.u
         v = data.v
@@ -345,7 +310,7 @@ def grid(data, gridsize=256, binsize=2000.0, convolution="pillbox", \
             freq = data.freq
             real = data.real
             imag = data.imag
-            weights = data.weights
+            weights = data.weights.copy()
     
     # Set the weights equal to 0 when the point is flagged (i.e. weight < 0)
     weights = numpy.where(weights < 0, 0.0, weights)
@@ -354,12 +319,10 @@ def grid(data, gridsize=256, binsize=2000.0, convolution="pillbox", \
 
     # Set some parameter numbers for future use.
     
-    cdef double convolve
-    cdef double inv_binsize = 1. / binsize
-    cdef int nuv = u.size
-    cdef int nfreq = freq.size
+    inv_binsize = 1. / binsize
+    nuv = u.size
+    nfreq = freq.size
 
-    cdef int nchannels
     if mode == "continuum":
         nchannels = 1
     elif mode == "spectralline":
@@ -401,6 +364,11 @@ def grid(data, gridsize=256, binsize=2000.0, convolution="pillbox", \
                     (gridsize-1)/2., dtype=numpy.uint32)
         j = numpy.array(v.reshape((v.size,1))*freq*inv_freq/binsize+ \
                     (gridsize-1)/2., dtype=numpy.uint32)
+
+    if mode == "continuum":
+        f = numpy.repeat(0, nfreq)
+    else:
+        f = numpy.arange(nfreq)
     
     if convolution == "pillbox":
         convolve_func = ones
@@ -424,101 +392,37 @@ def grid(data, gridsize=256, binsize=2000.0, convolution="pillbox", \
     if good.sum() < good.size:
         print("WARNING: uv.grid was supplied with a gridsize and binsize that do not cover the full range of the input data in the uv-plane and is cutting baselines that are outside of this grid. Make sure to check your results carefully.")
 
+    weights[good] == 0.
+    i[good], j[good] = 0, 0
+
     # If we are using a non-uniform weighting scheme, adjust the data weights.
 
     if weighting in ["uniform","superuniform","robust"]:
         binned_weights = numpy.ones((gridsize,gridsize,nchannels))
 
         npix = npixels
-
         if weighting == "superuniform":
             npix = 3
 
-        for k in range(nuv):
-            for n in range(nfreq):
-                if not good[k,n]:
-                    continue
-
-                if npix > j[k,n]:
-                    lmin = 0
-                else:
-                    lmin = j[k,n] - npix
-
-                lmax = int_min(j[k,n]+npix+1, gridsize)
-
-                if npix > i[k,n]:
-                    mmin = 0
-                else:
-                    mmin = i[k,n] - npix
-
-                mmax = int_min(i[k,n]+npix+1, gridsize)
-
-                for l in range(lmin, lmax):
-                    for m in range(mmin, mmax):
-                        if mode == "continuum":
-                            binned_weights[l,m,0] += weights[k,n]
-                        elif mode == "spectralline":
-                            binned_weights[l,m,n] += weights[k,n]
+        weight_binner(weights, binned_weights, i, j, f, nuv, nfreq, npix, \
+                gridsize)
 
         if weighting in ["uniform","superuniform"]:
-            for k in range(nuv):
-                for n in range(nfreq):
-                    if not good[k,n]:
-                        continue
-
-                    l = j[k,n]
-                    m = i[k,n]
-
-                    weights[k,n] /= binned_weights[l,m,n]
+            f1 = 0.
+            f2 = numpy.ones(nfreq)
         elif weighting == "robust":
+            f1 = 1.
             f2 = (5*10**(-robust))**2 / \
                     ((binned_weights**2).sum(axis=(0,1)) / weights.sum(axis=0))
 
-            for k in range(nuv):
-                for n in range(nfreq):
-                    if not good[k,n]:
-                        continue
-
-                    l = j[k,n]
-                    m = i[k,n]
-
-                    weights[k,n] /= (1 + f2[n] * binned_weights[l,m,n])
+        weight_divider(weights, binned_weights, i, j, f1, f2, nuv, nfreq)
 
     # Now actually go through and calculate the new visibilities.
 
-    for k in range(nuv):
-        for n in range(nfreq):
-            if not good[k,n]:
-                continue
-
-            if ninclude_min > j[k,n]:
-                lmin = 0
-            else:
-                lmin = j[k,n] - ninclude_min
-
-            lmax = int_min(j[k,n]+ninclude_max+1, gridsize)
-
-            if ninclude_min > i[k,n]:
-                mmin = 0
-            else:
-                mmin = i[k,n] - ninclude_min
-
-            mmax = int_min(i[k,n]+ninclude_max+1, gridsize)
-
-            for l in range(lmin, lmax):
-                for m in range(mmin, mmax):
-                    convolve = convolve_func( (u[k]*freq[n]*inv_freq-\
-                            new_u[l,m])*inv_binsize, \
-                            (v[k]*freq[n]*inv_freq - new_v[l,m]) * inv_binsize)
-
-                    if mode == "continuum":
-                        new_real[l,m,0] += real[k,n]*weights[k,n]*convolve
-                        new_imag[l,m,0] += imag[k,n]*weights[k,n]*convolve
-                        new_weights[l,m,0] += weights[k,n]*convolve
-                    elif mode == "spectralline":
-                        new_real[l,m,n] += real[k,n]*weights[k,n]*convolve
-                        new_imag[l,m,n] += imag[k,n]*weights[k,n]*convolve
-                        new_weights[l,m,n] += weights[k,n]*convolve
+    new_real, new_imag, new_weights = gridder(u, v, freq, real, imag, weights, \
+            new_u, new_v, new_real, new_imag, new_weights, i, j, f, nuv, nfreq,\
+            ninclude_min, ninclude_max, gridsize, convolve_func, inv_freq, \
+            inv_binsize)
 
     # If we are making an image, normalize the weights.
 
@@ -540,62 +444,128 @@ def grid(data, gridsize=256, binsize=2000.0, convolution="pillbox", \
             new_imag.reshape((gridsize**2,nchannels)), \
             new_weights.reshape((gridsize**2,nchannels)))
 
-cdef inline int int_max(int a, int b): return a if a >= b else b
-cdef inline int int_min(int a, int b): return a if a <= b else b
-cdef inline double int_abs(double a): return -a if a < 0 else a
+@numba.jit(fastmath=True, nopython=True)
+def weight_binner(weights, binned_weights, i, j, f, nuv, nfreq, npix, gridsize):
 
-cdef double sinc(double x):
+    for k in range(nuv):
+        for n in range(nfreq):
+            if npix > j[k,n]:
+                lmin = 0
+            else:
+                lmin = j[k,n] - npix
 
-    cdef double xp = x * pi
+            lmax = min(j[k,n]+npix+1, gridsize)
+
+            if npix > i[k,n]:
+                mmin = 0
+            else:
+                mmin = i[k,n] - npix
+
+            mmax = min(i[k,n]+npix+1, gridsize)
+
+            for l in range(lmin, lmax):
+                for m in range(mmin, mmax):
+                    binned_weights[l,m,f[n]] += weights[k,n]
+
+    return binned_weights
+
+@numba.jit(fastmath=True, nopython=True)
+def weight_divider(weights, binned_weights, i, j, a, b, nuv, nfreq):
+
+    for k in range(nuv):
+        for n in range(nfreq):
+            l = j[k,n]
+            m = i[k,n]
+
+            weights[k,n] /= (a + b[n] * binned_weights[l,m,n])
+
+
+@numba.jit(fastmath=True, nopython=True)
+def gridder(u, v, freq, real, imag, weights, new_u, new_v, new_real, new_imag, \
+        new_weights, i, j, f, nuv, nfreq, ninclude_min, ninclude_max, gridsize,\
+        convolve_func, inv_freq, inv_binsize):
+
+    for k in range(nuv):
+        for n in range(nfreq):
+            if ninclude_min > j[k,n]:
+                lmin = 0
+            else:
+                lmin = j[k,n] - ninclude_min
+
+            lmax = min(j[k,n]+ninclude_max+1, gridsize)
+
+            if ninclude_min > i[k,n]:
+                mmin = 0
+            else:
+                mmin = i[k,n] - ninclude_min
+
+            mmax = min(i[k,n]+ninclude_max+1, gridsize)
+
+            for l in range(lmin, lmax):
+                for m in range(mmin, mmax):
+                    convolve = convolve_func( (u[k]*freq[n]*inv_freq-\
+                            new_u[l,m])*inv_binsize, \
+                            (v[k]*freq[n]*inv_freq - new_v[l,m]) * inv_binsize)
+
+                    new_real[l,m,f[n]] += real[k,n]*weights[k,n]*convolve
+                    new_imag[l,m,f[n]] += imag[k,n]*weights[k,n]*convolve
+                    new_weights[l,m,f[n]] += weights[k,n]*convolve
+
+    return new_real, new_imag, new_weights
+
+@numba.jit(fastmath=True, nopython=True)
+def sinc(x):
+
+    xp = x * numpy.pi
 
     return 1. - xp**2/6. + xp**4/120. - xp**6/5040. + xp**8/362880. - \
             xp**10/39916800. + xp**12/6227020800. - xp**14/1307674368000. + \
             xp**16/355687428096000.
 
-cdef double exp(double x):
+@numba.jit(fastmath=True, nopython=True)
+def exp(x):
 
     return 1 + x + x**2/2. + x**3/6. + x**4/24. + x**5/120.
 
-cdef double exp_sinc(double u, double v):
+@numba.jit(fastmath=True, nopython=True)
+def exp_sinc(u, v):
     
-    cdef double inv_alpha1 = 1. / 1.55
-    cdef double inv_alpha2 = 1. / 2.52
-    cdef double norm = 2.350016262343186
-    cdef int m = 6
+    inv_alpha1 = 1. / 1.55
+    inv_alpha2 = 1. / 2.52
+    norm = 2.350016262343186
+    m = 6
     
-    if (int_abs(u) >= m * 0.5) or (int_abs(v) >= m * 0.5):
+    if (abs(u) >= m * 0.5) or (abs(v) >= m * 0.5):
         return 0.
 
-    cdef double arr = sinc(u * inv_alpha1) * \
+    arr = sinc(u * inv_alpha1) * \
             sinc(v * inv_alpha1) * \
             exp(-1 * (u * inv_alpha2)**2) * \
             exp(-1 * (v * inv_alpha2)**2) / norm
 
     return arr
 
-cdef double ones(double u, double v):
+@numba.jit(fastmath=True, nopython=True)
+def ones(u, v):
     
-    cdef int m = 1
+    m = 1
 
-    if (int_abs(u) >= m * 0.5) or (int_abs(v) >= m * 0.5):
+    if (abs(u) >= m * 0.5) or (abs(v) >= m * 0.5):
         return 0.
 
-    cdef double arr = 1.0
+    arr = 1.0
 
     return arr
 
-@cython.boundscheck(False)
 def freqcorrect(data, freq=None):
-    cdef numpy.ndarray[double, ndim=1] new_u, new_v, new_freq
-    cdef numpy.ndarray[double, ndim=2] new_real, new_imag, new_weights
 
     if freq != None:
         new_freq = numpy.array([freq])
     else:
         new_freq = numpy.array([data.freq.mean()])
 
-    cdef double inv_freq = 1./new_freq[0]
-    cdef numpy.ndarray[double, ndim=1] scale = data.freq * inv_freq
+    inv_freq = 1./new_freq[0]
+    scale = data.freq * inv_freq
 
     new_u = (data.u.reshape((data.u.size,1))*scale).reshape((data.real.size,))
     new_v = (data.v.reshape((data.v.size,1))*scale).reshape((data.real.size,))
@@ -613,21 +583,16 @@ def chisq(data, model):
 
     return chi_squared
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-@cython.nonecheck(False)
-cdef float chisq_calc(numpy.ndarray[double, ndim=2] data_real, \
-        numpy.ndarray[double, ndim=2] data_imag, \
-        numpy.ndarray[double, ndim=2] data_weights, \
-        numpy.ndarray[double, ndim=2] model_real, \
-        numpy.ndarray[double, ndim=2] model_imag, int nuv):
-    cdef double chisq = 0
-    cdef double diff1, diff2
-    cdef unsigned int i
+def chisq_calc(data_real, \
+        data_imag, \
+        data_weights, \
+        model_real, \
+        model_imag, nuv):
+    chisq = 0
 
     for i in range(nuv):
-        diff1 = data_real[<unsigned int>i,0] - model_real[<unsigned int>i,0]
-        diff2 = data_imag[<unsigned int>i,0] - model_imag[<unsigned int>i,0]
-        chisq += (diff1*diff1 + diff2*diff2) * data_weights[<unsigned int>i,0]
+        diff1 = data_real[i,0] - model_real[i,0]
+        diff2 = data_imag[i,0] - model_imag[i,0]
+        chisq += (diff1*diff1 + diff2*diff2) * data_weights[i,0]
 
     return chisq

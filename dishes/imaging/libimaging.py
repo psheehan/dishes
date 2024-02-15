@@ -1,22 +1,12 @@
 import numpy
-cimport numpy
 import astropy
 import h5py
 from scipy.constants import c
 c *= 100
 
-cdef class ImageObject:
-    cdef public numpy.ndarray image, x, y, unc, velocity, freq, wave
-    cdef public header, wcs
-
-    def __init__(self, numpy.ndarray[double, ndim=4] image=None, \
-            numpy.ndarray[double, ndim=1] x=None, \
-            numpy.ndarray[double, ndim=1] y=None, \
-            numpy.ndarray[double, ndim=1] wave=None, \
-            numpy.ndarray[double, ndim=1] freq=None, \
-            numpy.ndarray[double, ndim=4] unc=None, \
-            numpy.ndarray[double, ndim=1] velocity=None, \
-            header=None, wcs = None):
+class Image:
+    def __init__(self, image=None, x=None, y=None, wave=None, freq=None, \
+            unc=None, velocity=None, header=None, wcs = None):
 
         self.image = image
 
@@ -40,13 +30,11 @@ cdef class ImageObject:
             self.freq = freq
 
     def __reduce__(self):
-        return (rebuild, (self.image, self.x, self.y, self.wave, self.freq, \
-                self.unc, self.velocity, self.header, self.wcs))
+        return (self.rebuild, (self.image, self.x, self.y, self.wave, \
+                self.freq, self.unc, self.velocity, self.header, self.wcs))
 
-def rebuild(image, x, y, wave, freq, unc, velocity, header, wcs):
-    return ImageObject(image, x, y, wave, freq, unc, velocity, header, wcs)
-
-class Image(ImageObject):
+    def rebuild(image, x, y, wave, freq, unc, velocity, header, wcs):
+        return Image(image, x, y, wave, freq, unc, velocity, header, wcs)
 
     def asFITS(self, channel=None):
         hdulist = astropy.io.fits.HDUList([])
@@ -72,13 +60,6 @@ class Image(ImageObject):
         return hdulist
 
     def set_uncertainty_from_image(self, image, box=128):
-        cdef unsigned int ny, nx, nfreq, npol
-        cdef unsigned int xmin, xmax, ymin, ymax
-        cdef unsigned int i, j
-        cdef unsigned int halfbox
-        cdef numpy.ndarray[double, ndim=2] subimage
-        cdef numpy.ndarray[double, ndim=4] unc
-
         ny, nx, nfreq, npol = self.image.shape
 
         halfbox = box / 2
@@ -86,10 +67,10 @@ class Image(ImageObject):
         unc = numpy.empty(self.image.shape)
         for i in range(ny):
             for j in range(nx):
-                xmin = max(0,<int>j-64)
-                xmax = min(<int>j+64,nx)
-                ymin = max(0,<int>i-64)
-                ymax = min(<int>i+64,ny)
+                xmin = max(0,j-64)
+                xmax = min(j+64,nx)
+                ymin = max(0,i-64)
+                ymax = min(i+64,ny)
 
                 subimage = image.image[ymin:ymax,xmin:xmax,0,0]
 
@@ -184,16 +165,10 @@ class Image(ImageObject):
 ################################################################################
 
 
-cdef class UnstructuredImageObject:
-    cdef public numpy.ndarray image, x, y, unc, velocity, freq, wave
+class UnstructuredImage:
 
-    def __init__(self, numpy.ndarray[double, ndim=2] image=None, \
-            numpy.ndarray[double, ndim=1] x=None, \
-            numpy.ndarray[double, ndim=1] y=None, \
-            numpy.ndarray[double, ndim=1] wave=None, \
-            numpy.ndarray[double, ndim=1] freq=None, \
-            numpy.ndarray[double, ndim=2] unc=None, \
-            numpy.ndarray[double, ndim=1] velocity=None):
+    def __init__(self, image=None, x=None, y=None, wave=None, freq=None, \
+            unc=None, velocity=None):
 
         self.image = image
 
@@ -214,13 +189,11 @@ cdef class UnstructuredImageObject:
             self.freq = freq
 
     def __reduce__(self):
-        return (rebuild_unstructured, (self.image, self.x, self.y, self.wave, \
+        return (self.rebuild, (self.image, self.x, self.y, self.wave, \
                 self.freq, self.unc, self.velocity))
 
-def rebuild_unstructured(image, x, y, wave, freq, unc, velocity):
-    return UnstructuredImageObject(image, x, y, wave, freq, unc, velocity)
-
-class UnstructuredImage(UnstructuredImageObject):
+    def rebuild_unstructured(image, x, y, wave, freq, unc, velocity):
+        UnstructuredImage(image, x, y, wave, freq, unc, velocity)
 
     def read(self, filename=None, usefile=None):
         if (usefile == None):
