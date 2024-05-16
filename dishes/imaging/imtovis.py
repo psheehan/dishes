@@ -1,6 +1,6 @@
 import numpy
+import astropy.units as u
 from ..interferometry import Visibilities
-from scipy.constants import arcsec
 from scipy.fftpack import fft2, fftshift, fftfreq, ifftshift
 
 def imtovis(image):
@@ -15,8 +15,8 @@ def imtovis(image):
         real[:,i] = vis.real.reshape((image.x.size*image.y.size,))
         imag[:,i] = vis.imag.reshape((image.x.size*image.y.size,))
 
-    uu = fftshift(fftfreq(image.x.size, (image.x[1] - image.x[0]) * arcsec))
-    vv = fftshift(fftfreq(image.y.size, (image.y[1] - image.y[0]) * arcsec))
+    uu = fftshift(fftfreq(image.x.size, (image.x[1] - image.x[0]) * u.arcsec.to(u.radian)))
+    vv = fftshift(fftfreq(image.y.size, (image.y[1] - image.y[0]) * u.arcsec.to(u.radian)))
     
     u, v = numpy.meshgrid(uu, vv)
     u = u.reshape((image.x.size*image.y.size,))

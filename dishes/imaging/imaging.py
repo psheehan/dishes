@@ -1,8 +1,7 @@
 import numpy
 import astropy
 import h5py
-from scipy.constants import c
-c *= 100
+import astropy.constants as const
 
 class Image:
 
@@ -24,10 +23,10 @@ class Image:
 
         if (type(wave) == type(None)) and (type(freq) != type(None)):
             self.freq = freq
-            self.wave = c / freq
+            self.wave = const.c.cgs.value / freq
         elif (type(wave) != type(None)) and (type(freq) == type(None)):
             self.wave = wave
-            self.freq = c / wave
+            self.freq = const.c.cgs.value / wave
         elif (type(wave) != type(None)) and (type(freq) != type(None)):
             self.wave = wave
             self.freq = freq

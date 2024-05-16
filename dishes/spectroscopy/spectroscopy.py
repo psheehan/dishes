@@ -1,15 +1,14 @@
 import numpy
 import astropy
 import h5py
-from scipy.constants import c
-c *= 100
+import astropy.constants as const
 
 class Spectrum:
 
     def __init__(self, wave=None, flux=None, unc=None):
         if (type(wave) != type(None)):
             self.wave = wave
-            self.freq = c / wave / 1.0e-4
+            self.freq = const.c.cgs.value / wave / 1.0e-4
             self.flux = flux
             if type(unc) == type(None):
                 unc = numpy.zeros(wave.size)
@@ -20,7 +19,7 @@ class Spectrum:
     def asFITS(self):
         hdulist = astropy.io.fits.HDUList([])
 
-        hdu = pyfits.PrimaryHDU(numpy.concatenate(( \
+        hdu = astropy.io.fits.PrimaryHDU(numpy.concatenate(( \
                 self.wave.reshape((1,self.wave.size)), \
                 self.flux.reshape((1,self.wave.size)), \
                 self.unc.reshape((1,self.wave.size)))))

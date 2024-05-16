@@ -1,5 +1,4 @@
-from scipy.constants import c
-c *= 100
+import astropy.constants as const
 from .libinterferometry import Visibilities
 import astropy.table
 import casatools
@@ -237,7 +236,7 @@ def readms(filename, spw='all', tolerance=0.01, time_tolerance=0., \
 
     # Include the complex conjugate.
 
-    scale = 100 * freq.mean() / c
+    scale = 100 * freq.mean() / const.c.cgs.value
 
     u = numpy.concatenate((u, -u))*scale
     v = numpy.concatenate((v, -v))*scale

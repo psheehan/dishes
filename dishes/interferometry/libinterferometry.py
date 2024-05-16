@@ -174,11 +174,13 @@ def average(data, gridsize=256, binsize=None, radial=False, log=False, \
         if log:
             temp = numpy.linspace(numpy.log10(logmin), numpy.log10(logmax), \
                     gridsize+1)
-            new_u = 10**((temp[1:] + temp[0:-1])/2)
+            new_u_final = 10**((temp[1:] + temp[0:-1])/2)
         else:
-            new_u = numpy.linspace(binsize/2,(gridsize-0.5)*binsize,gridsize)
-        new_u = new_u.reshape((1,gridsize))
-        new_v = numpy.zeros((1,gridsize))
+            new_u_final = numpy.linspace(binsize/2,(gridsize-0.5)*binsize,gridsize)
+        new_u_final = new_u_final.reshape((1,gridsize))
+        new_v_final = numpy.zeros((1,gridsize))
+        new_u = numpy.zeros((1,gridsize,nchannels))
+        new_v = numpy.zeros((1,gridsize,nchannels))
         new_real = numpy.zeros((1,gridsize,nchannels))
         new_imag = numpy.zeros((1,gridsize,nchannels))
         new_weights = numpy.zeros((1,gridsize,nchannels))
@@ -249,6 +251,9 @@ def average(data, gridsize=256, binsize=None, radial=False, log=False, \
     if not radial:
         new_u[good_data] = new_u[good_data] / new_weights[good_data]
         new_v[good_data] = new_v[good_data] / new_weights[good_data]
+    else:
+        new_u = new_u_final
+        new_v = new_v_final
 
     good_data = numpy.any(good_data, axis=2)
     if not radial:
@@ -392,8 +397,9 @@ def grid(data, gridsize=256, binsize=2000.0, convolution="pillbox", \
     if good.sum() < good.size:
         print("WARNING: uv.grid was supplied with a gridsize and binsize that do not cover the full range of the input data in the uv-plane and is cutting baselines that are outside of this grid. Make sure to check your results carefully.")
 
-    weights[good] == 0.
-    i[good], j[good] = 0, 0
+    not_good = numpy.logical_not(good)
+    weights[not_good] == 0.
+    i[not_good], j[not_good] = 0, 0
 
     # If we are using a non-uniform weighting scheme, adjust the data weights.
 

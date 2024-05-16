@@ -1,7 +1,7 @@
-from scipy.constants import c, arcsec
-c *= 100
 from .libimaging import Image
 from astropy.utils.exceptions import AstropyWarning
+import astropy.constants as const
+import astropy.units as u
 import astropy.io.fits as fits
 import astropy.wcs as wcs
 import warnings
@@ -45,8 +45,8 @@ def readimfits(filename):
 
     if len(data) > 1:
         if data[1].columns[0].name == 'BMAJ':
-            header["BMAJ"] = data[1].data["BMAJ"].mean()*arcsec * 180./numpy.pi
-            header["BMIN"] = data[1].data["BMIN"].mean()*arcsec * 180./numpy.pi
+            header["BMAJ"] = data[1].data["BMAJ"].mean()*u.arcsec.to(u.radian) * 180./numpy.pi
+            header["BMIN"] = data[1].data["BMIN"].mean()*u.arcsec.to(u.radian) * 180./numpy.pi
             header["BPA"] = data[1].data["BPA"].mean()
 
     # Turn off the WCS warnings that come from the PCX_Y values because they
@@ -75,7 +75,7 @@ def readimfits(filename):
             velocity = (numpy.arange(nfreq)-(n0-1))*dv/1000.+v0/1000.
 
             nu0 = data[0].header["RESTFREQ"]
-            freq = nu0 - velocity*1e5 * nu0 / c
+            freq = nu0 - velocity*1e5 * nu0 / const.c.cgs.value
         elif header["CTYPE3"] == "FREQ":
             nu0 = data[0].header["CRVAL3"]
             dnu = data[0].header["CDELT3"]

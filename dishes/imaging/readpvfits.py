@@ -1,5 +1,4 @@
-from scipy.constants import arcsec, c
-c *= 100
+import astropy.constants as const
 from .libimaging import Image
 from astropy.utils.exceptions import AstropyWarning
 import astropy.io.fits as fits
@@ -44,7 +43,7 @@ def readpvfits(filename):
     freq = (numpy.arange(nv)-(n0-1))*dnu + nu0
     restfreq = data[0].header["RESTFRQ"]
 
-    velocity = c * (restfreq - freq) / restfreq
+    velocity = const.c.cgs.value * (restfreq - freq) / restfreq
 
     data.close()
  

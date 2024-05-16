@@ -1,6 +1,6 @@
-from scipy.constants import c
-c *= 100
-from numpy import arange,ones,concatenate,sqrt,exp,where,array,mat,sin,log
+import astropy.constants as const
+import astropy.units as u
+from numpy import arange,ones,concatenate,sqrt,exp,where,array,mat,sin,log,pi
 from numpy import abs as absv
 from scipy.optimize import leastsq
 import matplotlib.pyplot as plt
@@ -78,12 +78,12 @@ def line_flux(data,lines,nleft=8,nright=8,plotout=None,quiet=False, \
     
     # Calculate the flux and uncertainty.
     
-    F = sqrt(2*pi)*A[ind]*Jy*(c*A[ind+2*nlines]*1.0e-4)/(A[ind+nlines]* \
+    F = sqrt(2*pi)*A[ind]*(1*u.Jy).cgs.value*(const.c.cgs.value*A[ind+2*nlines]*1.0e-4)/(A[ind+nlines]* \
         1.0e-4)**2/1.0e7
     
     deltaF = ones(nlines)
     for i in arange(nlines):
-        deltaF[i] = sqrt(((unc_fit*Jy*c*B/(wave_fit*1.0e-4)*exp(-1.0*( \
+        deltaF[i] = sqrt(((unc_fit*(1*u.Jy).cgs.value*const.c.cgs.value*B/(wave_fit*1.0e-4)*exp(-1.0*( \
             wave_fit-A[i+nlines])**2/(2*A[i+2*nlines]**2)))**2).sum())/1.0e7
     
     # Output the results.

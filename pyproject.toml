@@ -22,7 +22,8 @@ dependencies = [
     "h5py",
     "astropy",
     "dynesty",
-    "numba"
+    "numba",
+    "astropy",
 ]
 
 [project.urls]

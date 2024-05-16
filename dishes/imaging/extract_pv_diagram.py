@@ -1,5 +1,5 @@
-from scipy.constants import arcsec, c
-c *= 100
+import astropy.constants as const
+import astropy.units as u
 
 from . import Image
 try:
@@ -39,13 +39,13 @@ def extract_pv_diagram(image, xy=(0.,0.), pa=0., length=100, width=1):
 
     # Get the velocity.
 
-    velocity = c * (image.header["RESTFRQ"] - image.freq) / \
+    velocity = const.c.cgs.value * (image.header["RESTFRQ"] - image.freq) / \
             image.header["RESTFRQ"]
 
     # Get the x coordinates.
 
     x0 =  0.
-    dx =  image.header["CDELT2"] * numpy.pi/180 / arcsec
+    dx =  image.header["CDELT2"] * numpy.pi/180 / u.arcsec.to(u.radian)
     nx0 = int(pv.data.shape[1] / 2) + 1
 
     x = (numpy.arange(pv.data.shape[1]) - (nx0-1))*dx + x0

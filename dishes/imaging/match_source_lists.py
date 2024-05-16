@@ -5,6 +5,7 @@ import astropy.coordinates
 #def match_source_lists(*lists, tol=0.3, table_names=['1', '2']):
 def match_source_lists(tol=0.3, table_names=['1', '2'], *lists):
 
+    joined_list = None
     for i in range(len(lists)-1):
         if i == 0:
             list1 = lists[i]
