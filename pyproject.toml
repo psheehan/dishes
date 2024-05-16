@@ -1,2 +1,30 @@
 [build-system]
-requires = ["setuptools","wheel"]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dishes"
+version = "0.0.1"
+authors = [
+    {name="Patrick Sheehan", email="psheehan@nrao.edu"},
+]
+description = "Tools for working with radio interferometry visibilities and images"
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "numpy",
+    "scipy",
+    "matplotlib",
+    "h5py",
+    "astropy",
+    "dynesty",
+    "numba"
+]
+
+[project.urls]
+Homepage = "https://github.com/psheehan/dishes"
+
