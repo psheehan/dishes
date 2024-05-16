@@ -1,5 +1,5 @@
 import numpy
-import astropy.units as u
+import astropy.units as units
 from . import center
 from .libinterferometry import grid
 from ..imaging import Image
@@ -30,7 +30,7 @@ def invert(data, imsize=256, pixel_size=0.25, convolution="pillbox", mfs=False,\
 
     # Grid the data before imaging.
     
-    binsize = 1.0 / (pixel_size * imsize * u.arcsec.to(u.radian))
+    binsize = 1.0 / (pixel_size * imsize * units.arcsec.to(units.radian))
     gridded_data = grid(data, gridsize=imsize, binsize=binsize, \
             convolution=convolution, mfs=mfs, imaging=True, \
             weighting=weighting, robust=robust, npixels=npixels, mode=mode)
@@ -53,8 +53,8 @@ def invert(data, imsize=256, pixel_size=0.25, convolution="pillbox", mfs=False,\
 
     # Set up information for the final image.
             
-    x = fftshift(fftfreq(imsize, binsize)) / u.arcsec.to(u.radian)
-    y = fftshift(fftfreq(imsize, binsize)) / u.arcsec.to(u.radian)
+    x = fftshift(fftfreq(imsize, binsize)) / units.arcsec.to(units.radian)
+    y = fftshift(fftfreq(imsize, binsize)) / units.arcsec.to(units.radian)
     xx, yy = numpy.meshgrid(x, y)
     r = numpy.sqrt(xx**2 + yy**2)
 

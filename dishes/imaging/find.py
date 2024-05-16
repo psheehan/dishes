@@ -1,4 +1,4 @@
-import astropy.units as u
+import astropy.units as units
 import matplotlib.pyplot as plt
 import scipy.ndimage.filters
 import scipy.ndimage.morphology
@@ -72,7 +72,7 @@ def find(image, threshold=5, include_radius=20, window_size=40, \
         pixcoords = image.wcs.wcs_world2pix(coords.ra.degree, \
                 coords.dec.degree, 1, ra_dec_order=True)
 
-        arcsec_in_pixels = u.arcsec.to(u.radian) / (abs(image.wcs.wcs.cdelt[0]) * numpy.pi/180)
+        arcsec_in_pixels = units.arcsec.to(units.radian) / (abs(image.wcs.wcs.cdelt[0]) * numpy.pi/180)
 
         for peak_coords in potential_sources:
             for count, pixcoord in enumerate(zip(pixcoords[0], pixcoords[1])):
@@ -147,7 +147,7 @@ def find(image, threshold=5, include_radius=20, window_size=40, \
         z = image.image[int(ymin):int(ymax),int(xmin):int(xmax),0,0]
         sigma_z = image.unc[int(ymin):int(ymax),int(xmin):int(xmax),0,0]
 
-        beam_to_sigma = u.arcsec.to(u.radian) / (abs(image.wcs.wcs.cdelt[0]) * numpy.pi/180) /\
+        beam_to_sigma = units.arcsec.to(units.radian) / (abs(image.wcs.wcs.cdelt[0]) * numpy.pi/180) /\
                 2.355
 
         xc, yc = coords[1], coords[0]
@@ -275,18 +275,18 @@ def find(image, threshold=5, include_radius=20, window_size=40, \
             sources['dec'] = temp.dec.to_string()
 
             sources['ra_unc'] = abs(image.wcs.wcs.cdelt[0]) * sources['x_unc'] / \
-                    (180. / numpy.pi) / u.arcsec.to(u.radian)
+                    (180. / numpy.pi) / units.arcsec.to(units.radian)
             sources['dec_unc'] = abs(image.wcs.wcs.cdelt[1]) * sources['y_unc'] / \
-                    (180. / numpy.pi) / u.arcsec.to(u.radian)
+                    (180. / numpy.pi) / units.arcsec.to(units.radian)
 
             sources['FWHM_x'] = 2.35482 * abs(image.wcs.wcs.cdelt[0]) * \
-                    sources['sigma_x'] / (180. / numpy.pi) / u.arcsec.to(u.radian)
+                    sources['sigma_x'] / (180. / numpy.pi) / units.arcsec.to(units.radian)
             sources['FWHM_y'] = 2.35482 * abs(image.wcs.wcs.cdelt[1]) * \
-                    sources['sigma_y'] / (180. / numpy.pi) / u.arcsec.to(u.radian)
+                    sources['sigma_y'] / (180. / numpy.pi) / units.arcsec.to(units.radian)
             sources['FWHM_x_unc'] = 2.35482 * abs(image.wcs.wcs.cdelt[0]) * \
-                    sources['sigma_x_unc'] / (180. / numpy.pi) / u.arcsec.to(u.radian)
+                    sources['sigma_x_unc'] / (180. / numpy.pi) / units.arcsec.to(units.radian)
             sources['FWHM_y_unc'] = 2.35482 * abs(image.wcs.wcs.cdelt[1]) * \
-                    sources['sigma_y_unc'] / (180. / numpy.pi) / u.arcsec.to(u.radian)
+                    sources['sigma_y_unc'] / (180. / numpy.pi) / units.arcsec.to(units.radian)
 
             sources['flux'] = sources['f'] * sources['sigma_x'] * \
                     sources['sigma_y'] * 2 * numpy.pi

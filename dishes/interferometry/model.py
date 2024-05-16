@@ -1,5 +1,5 @@
 import astropy.constants as const
-import astropy.units as u
+import astropy.units as units
 import numpy
 import scipy.special
 from .libinterferometry import Visibilities
@@ -46,7 +46,7 @@ def model(u, v, params, return_type="complex", funct="gauss", freq=230., \
             r0 = (par[index+0]**2 + par[index+1]**2)**0.5
 
             if primary_beam == "ALMA":
-                fwhm_pb = 1.13 * (const.c.cgs.value*1.0e-2 / freq) / 12 / u.arcsec.to(u.radian)
+                fwhm_pb = 1.13 * (const.c.cgs.value*1.0e-2 / freq) / 12 / units.arcsec.to(units.radian)
             elif primary_beam == "VLA":
                 fwhm_pb = 60. * 45 / (freq / 1.0e9)
             else:
@@ -58,14 +58,14 @@ def model(u, v, params, return_type="complex", funct="gauss", freq=230., \
             par[int(index + nparams[i] - 1)] *= pb
 
         # Convert sizes into arcseconds.
-        par[index+0] *= u.arcsec.to(u.radian)
-        par[index+1] *= u.arcsec.to(u.radian)
+        par[index+0] *= units.arcsec.to(units.radian)
+        par[index+1] *= units.arcsec.to(units.radian)
         if (funct[i] == "gauss") or (funct[i] == "circle") or \
                 (funct[i] == "ring"):
-            par[index+2] *= u.arcsec.to(u.radian)
+            par[index+2] *= units.arcsec.to(units.radian)
             #if (funct[i] == "gauss"):
             if (funct[i] == "gauss") or (funct[i] == "ring"):
-                par[index+3] *= u.arcsec.to(u.radian)
+                par[index+3] *= units.arcsec.to(units.radian)
         
         # Generate the model.
         if funct[i] == "point":

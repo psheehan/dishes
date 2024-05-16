@@ -1,5 +1,5 @@
 import astropy.constants as const
-import astropy.units as u
+import astropy.units as units
 
 from . import Image
 try:
@@ -45,7 +45,7 @@ def extract_pv_diagram(image, xy=(0.,0.), pa=0., length=100, width=1):
     # Get the x coordinates.
 
     x0 =  0.
-    dx =  image.header["CDELT2"] * numpy.pi/180 / u.arcsec.to(u.radian)
+    dx =  image.header["CDELT2"] * numpy.pi/180 / units.arcsec.to(units.radian)
     nx0 = int(pv.data.shape[1] / 2) + 1
 
     x = (numpy.arange(pv.data.shape[1]) - (nx0-1))*dx + x0

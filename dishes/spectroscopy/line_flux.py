@@ -1,5 +1,5 @@
 import astropy.constants as const
-import astropy.units as u
+import astropy.units as units
 from numpy import arange,ones,concatenate,sqrt,exp,where,array,mat,sin,log,pi
 from numpy import abs as absv
 from scipy.optimize import leastsq

@@ -1,7 +1,7 @@
 from .libimaging import Image
 from astropy.utils.exceptions import AstropyWarning
 import astropy.constants as const
-import astropy.units as u
+import astropy.units as units
 import astropy.io.fits as fits
 import astropy.wcs as wcs
 import warnings
@@ -45,8 +45,8 @@ def readimfits(filename):
 
     if len(data) > 1:
         if data[1].columns[0].name == 'BMAJ':
-            header["BMAJ"] = data[1].data["BMAJ"].mean()*u.arcsec.to(u.radian) * 180./numpy.pi
-            header["BMIN"] = data[1].data["BMIN"].mean()*u.arcsec.to(u.radian) * 180./numpy.pi
+            header["BMAJ"] = data[1].data["BMAJ"].mean()*units.arcsec.to(units.radian) * 180./numpy.pi
+            header["BMIN"] = data[1].data["BMIN"].mean()*units.arcsec.to(units.radian) * 180./numpy.pi
             header["BPA"] = data[1].data["BPA"].mean()
 
     # Turn off the WCS warnings that come from the PCX_Y values because they
