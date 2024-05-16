@@ -1,7 +1,4 @@
 from setuptools import setup
-from setuptools.extension import Extension
-from Cython.Build import cythonize
-import numpy as np
 
 # Now define the setup for the package.
 
