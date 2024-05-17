@@ -19,9 +19,9 @@ def match_baselines(vis1, vis2, fcut=0.25, plot=None, ndim=1, iepoch=0,\
     good1 = np.array(dclose1) < 0.2
     good2 = np.array(dclose2) < 0.2
 
-    vis1_close =  uv.Visibilities(vis1.u[good1], vis1.v[good1], vis1.freq, \
+    vis1_close =  Visibilities(vis1.u[good1], vis1.v[good1], vis1.freq, \
             vis1.real[good1,:], vis1.imag[good1,:], vis1.weights[good1,:])
-    vis2_close =  uv.Visibilities(vis2.u[good2], vis2.v[good2], vis2.freq, \
+    vis2_close =  Visibilities(vis2.u[good2], vis2.v[good2], vis2.freq, \
             vis2.real[good2,:], vis2.imag[good2,:], vis2.weights[good2,:])
 
     # Put the data together.
@@ -144,6 +144,6 @@ def match_baselines(vis1, vis2, fcut=0.25, plot=None, ndim=1, iepoch=0,\
                 interpolation="nearest")
         plt.show()
 
-    return vis1_close, uv.Visibilities(vis2_close.u[good], vis2_close.v[good], \
+    return vis1_close, Visibilities(vis2_close.u[good], vis2_close.v[good], \
             vis2_close.freq, vis2_close.real[good,:], vis2_close.imag[good,:], \
             vis2_close.weights[good,:])
